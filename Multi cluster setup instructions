@@ -79,6 +79,9 @@ different aliases paired with the port set in the zookeeper configuratiojn file
 
 zookeeper.connect=Kafka0:2181,Kafka1:2181,Kafka2:2181
 
+The only other recommended change is to set num.partitions to the total number of machines 
+in the cluster.  This will maximize performance, but will take up more disk space.
+
 
 
 
