@@ -40,9 +40,15 @@ server.0 through server.TOTALNUM
 
 for every machine you plan to have in use, there needs to be a value
 
-server.# = private IP Address
+server.# = private IP Address:port1:port2
 
 where # is the number you decided in step one, with that machines corresponding private IP address
+
+as for the ports, the defaults are ip:2888:3888
+it works to start from there. e.g.
+ip0:2888:3888
+ip1:2889:3889
+ip2:2890:3890
 
 ticktime
 
