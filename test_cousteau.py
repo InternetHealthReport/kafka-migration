@@ -3,6 +3,7 @@ import datetime
 import calendar
 import json
 import logging
+import time
 from datetime import timedelta
 from requests_futures.sessions import FuturesSession
 from requests.adapters import HTTPAdapter
@@ -11,7 +12,10 @@ from concurrent.futures import ThreadPoolExecutor
 
 #IMPORT KAFKA PRODUCER
 from kafka import KafkaProducer
-producer = KafkaProducer(bootstrap_servers='Kafka0:9092',value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+producer = KafkaProducer(bootstrap_servers=['Kafka0:9092', 'Kafka1:9092', 'Kafka2:9092'],
+                         value_serializer=lambda v: json.dumps(v).encode('utf-8'),
+                         max_request_size=20000240)
+
 #end import
 logging.basicConfig()#should be removable soon
 
@@ -73,11 +77,11 @@ def cousteau_on_steroid(params, retry=3):
 CollectionTime = datetime.datetime.utcnow()
 
 while True:
-    params = { "msm_id": [5001,5005, 5009, 5010, 5011, 5013, 5004], "start": (CollectionTime - timedelta(minutes=20)), "stop": (CollectionTime - timedelta(minutes=10)), "probe_ids": [] }
+    params = { "msm_id": [1748022, 1748024, 11645084, 11645087, 2244316, 2244318, 2244316, 2244318, 2435592, 2435594, 1796567, 1796569, 2904335, 2904338, 1618360, 1618362, 7970886, 7970889, 7970886, 7970889, 6886972, 6886975, 12237261], "start": (CollectionTime - timedelta(minutes=20)), "stop": (CollectionTime - timedelta(minutes=10)), "probe_ids": [] }
     for is_success, data in cousteau_on_steroid(params):
 
         if is_success:
-            producer.send('TEST: THE SEQUEL', value=data)
+            producer.send('TEST_THE_SEQUEL', value=data)
             producer.flush()
         else:
             print("Error could not load the data")
