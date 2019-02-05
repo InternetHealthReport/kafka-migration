@@ -4,17 +4,18 @@ import calendar
 import json
 import logging
 import time
+import requests
 from datetime import timedelta
 from requests_futures.sessions import FuturesSession
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from concurrent.futures import ThreadPoolExecutor
 
+
 #IMPORT KAFKA PRODUCER
 from kafka import KafkaProducer
-producer = KafkaProducer(bootstrap_servers=['Kafka0:9092', 'Kafka1:9092', 'Kafka2:9092'],
-                         value_serializer=lambda v: json.dumps(v).encode('utf-8'),
-                         max_request_size=20000240)
+producer = KafkaProducer(bootstrap_servers=[ 'Kafka1:9092', 'Kafka2:9092'],
+                         value_serializer=lambda v: json.dumps(v).encode('utf-8'))
 
 #end import
 logging.basicConfig()#should be removable soon
@@ -69,21 +70,27 @@ def cousteau_on_steroid(params, retry=3):
             ) )
 
     for query in queries:
-        resp = query.result()
-        yield (resp.ok, resp.data)
+        try:
+            resp = query.result()
+            yield (resp.ok, resp.data)
+        except requests.exceptions.ChunkedEncodingError:
+            logging.error("Could not retrieve traceroutes for {}".format(query))
 
 
-
-CollectionTime = datetime.datetime.utcnow()
-
-while True:
+#CollectionTime = datetime.datetime.utcnow()
+CollectionTime = datetime.datetime(2018,9,2)
+StopTime = datetime.datetime(2018,9,6)
+while CollectionTime < StopTime:
     params = { "msm_id": [1748022, 1748024, 11645084, 11645087, 2244316, 2244318, 2244316, 2244318, 2435592, 2435594, 1796567, 1796569, 2904335, 2904338, 1618360, 1618362, 7970886, 7970889, 7970886, 7970889, 6886972, 6886975, 12237261], "start": (CollectionTime - timedelta(minutes=20)), "stop": (CollectionTime - timedelta(minutes=10)), "probe_ids": [] }
     for is_success, data in cousteau_on_steroid(params):
-
+        print("downloading")
         if is_success:
-            producer.send('TEST_THE_SEQUEL', value=data)
+            for traceroute in data:
+                producer.send('new_topic_temp', value=traceroute)
+
             producer.flush()
         else:
             print("Error could not load the data")
+
     CollectionTime = CollectionTime + timedelta(minutes = 10)
-    time.sleep(600)
+    #time.sleep(5)
