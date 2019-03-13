@@ -5,6 +5,7 @@ import json
 import logging
 import time
 import requests
+import sys
 from datetime import timedelta
 from requests_futures.sessions import FuturesSession
 from requests.adapters import HTTPAdapter
@@ -77,20 +78,38 @@ def cousteau_on_steroid(params, retry=3):
             logging.error("Could not retrieve traceroutes for {}".format(query))
 
 
-#CollectionTime = datetime.datetime.utcnow()
-CollectionTime = datetime.datetime(2018,9,2,12)
-StopTime = datetime.datetime(2018,9,2,13)
-while CollectionTime < StopTime:
-    params = { "msm_id": [1748022, 1748024, 11645084, 11645087, 2244316, 2244318, 2244316, 2244318, 2435592, 2435594, 1796567, 1796569, 2904335, 2904338, 1618360, 1618362, 7970886, 7970889, 7970886, 7970889, 6886972, 6886975, 12237261], "start": (CollectionTime - timedelta(minutes=20)), "stop": (CollectionTime - timedelta(minutes=10)), "probe_ids": [] }
-    for is_success, data in cousteau_on_steroid(params):
-        print("downloading")
-        if is_success:
-            for traceroute in data:
-                producer.send('new_topic_temp', value=traceroute)
+if (len(sys.argv) == 1):
+    print("One argument. Every Ten Minutes")
+    #CollectionTime = datetime.datetime.utcnow()
+    CollectionTime = datetime.datetime.utcnow()
 
-            producer.flush()
-        else:
-            print("Error could not load the data")
+    while True:
+        params = { "msm_id": [1748022, 1748024, 11645084, 11645087, 2244316, 2244318, 2244316, 2244318, 2435592, 2435594, 1796567, 1796569, 2904335, 2904338, 1618360, 1618362, 7970886, 7970889, 7970886, 7970889, 6886972, 6886975, 12237261], "start": (CollectionTime - timedelta(minutes=20)), "stop": (CollectionTime - timedelta(minutes=10)), "probe_ids": [] }
+        for is_success, data in cousteau_on_steroid(params):
+            print("downloading")
+            if is_success:
+                producer.send('new_topic_temp', value=data)
+                producer.flush()
+            else:
+                print("Error could not load the data")
+        CollectionTime = CollectionTime + timedelta(minutes = 10)
+        time.sleep(600)
+elif (len(sys.argv) == 3):
+    print("3 Arguments.  Using Start and End Time")
+    CollectionTime = datetime.datetime.strptime(sys.argv[1], "%Y-%m-%d-%H:%M")
+    StopTime = datetime.datetime.strptime(sys.argv[2],"%Y-%m-%d-%H:%M")
+    while CollectionTime < StopTime:
+        params = { "msm_id": [1748022, 1748024, 11645084, 11645087, 2244316, 2244318, 2244316, 2244318, 2435592, 2435594, 1796567, 1796569, 2904335, 2904338, 1618360, 1618362, 7970886, 7970889, 7970886, 7970889, 6886972, 6886975, 12237261], "start": (CollectionTime - timedelta(minutes=20)), "stop": (CollectionTime - timedelta(minutes=10)), "probe_ids": [] }
+        for is_success, data in cousteau_on_steroid(params):
+            print("downloading")
+            if is_success:
+                for traceroute in data:
+                    producer.send('new_topic_temp', value=traceroute)
 
-    CollectionTime = CollectionTime + timedelta(minutes = 10)
-    #time.sleep(5)
+                producer.flush()
+            else:
+                print("Error could not load the data")
+
+        CollectionTime = CollectionTime + timedelta(minutes = 10)
+else:
+    print("Improper argument use.  Need either none or exactly 2, first start time, then end time")
