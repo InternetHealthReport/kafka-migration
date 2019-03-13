@@ -14,7 +14,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 #IMPORT KAFKA PRODUCER
 from kafka import KafkaProducer
-producer = KafkaProducer(bootstrap_servers=[ 'Kafka1:9092', 'Kafka2:9092'],
+producer = KafkaProducer(bootstrap_servers=['Kafka0:9092' 'Kafka1:9092', 'Kafka2:9092'],
                          value_serializer=lambda v: json.dumps(v).encode('utf-8'))
 
 #end import
@@ -78,8 +78,8 @@ def cousteau_on_steroid(params, retry=3):
 
 
 #CollectionTime = datetime.datetime.utcnow()
-CollectionTime = datetime.datetime(2018,9,2)
-StopTime = datetime.datetime(2018,9,6)
+CollectionTime = datetime.datetime(2018,9,2,12)
+StopTime = datetime.datetime(2018,9,2,13)
 while CollectionTime < StopTime:
     params = { "msm_id": [1748022, 1748024, 11645084, 11645087, 2244316, 2244318, 2244316, 2244318, 2435592, 2435594, 1796567, 1796569, 2904335, 2904338, 1618360, 1618362, 7970886, 7970889, 7970886, 7970889, 6886972, 6886975, 12237261], "start": (CollectionTime - timedelta(minutes=20)), "stop": (CollectionTime - timedelta(minutes=10)), "probe_ids": [] }
     for is_success, data in cousteau_on_steroid(params):

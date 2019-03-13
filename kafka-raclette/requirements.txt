@@ -1,0 +1,12 @@
+scipy
+configparser
+statsmodels
+numpy
+matplotlib
+requests_futures
+apsw
+reverse-geocoder
+cython
+progress
+py-radix
+pandas
