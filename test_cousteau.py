@@ -84,11 +84,12 @@ if (len(sys.argv) == 1):
     CollectionTime = datetime.datetime.utcnow()
 
     while True:
-        params = { "msm_id": [1748022, 1748024, 11645084, 11645087, 2244316, 2244318, 2244316, 2244318, 2435592, 2435594, 1796567, 1796569, 2904335, 2904338, 1618360, 1618362, 7970886, 7970889, 7970886, 7970889, 6886972, 6886975, 12237261], "start": (CollectionTime - timedelta(minutes=20)), "stop": (CollectionTime - timedelta(minutes=10)), "probe_ids": [] }
+        params = { "msm_id": [1748022, 1748024, 11645084, 11645087, 2244316, 2244318, 2244318, 2435592, 2435594, 1796567, 1796569], "start": (CollectionTime - timedelta(minutes=20)), "stop": (CollectionTime - timedelta(minutes=10)), "probe_ids": [] }
         for is_success, data in cousteau_on_steroid(params):
             print("downloading")
+
             if is_success:
-                producer.send('new_topic_temp', value=data)
+                producer.send('ATLAS_TEST_5', value=data)
                 producer.flush()
             else:
                 print("Error could not load the data")
@@ -99,14 +100,13 @@ elif (len(sys.argv) == 3):
     CollectionTime = datetime.datetime.strptime(sys.argv[1], "%Y-%m-%d-%H:%M")
     StopTime = datetime.datetime.strptime(sys.argv[2],"%Y-%m-%d-%H:%M")
     while CollectionTime < StopTime:
-        params = { "msm_id": [1748022, 1748024, 11645084, 11645087, 2244316, 2244318, 2244316, 2244318, 2435592, 2435594, 1796567, 1796569, 2904335, 2904338, 1618360, 1618362, 7970886, 7970889, 7970886, 7970889, 6886972, 6886975, 12237261], "start": (CollectionTime - timedelta(minutes=20)), "stop": (CollectionTime - timedelta(minutes=10)), "probe_ids": [] }
+        params = { "msm_id": [1748022, 1748024, 11645084, 11645087, 2244316, 2244318, 2244318, 2435592, 2435594, 1796567, 1796569], "start": (CollectionTime - timedelta(minutes=20)), "stop": (CollectionTime - timedelta(minutes=10)), "probe_ids": [] }
         for is_success, data in cousteau_on_steroid(params):
             print("downloading")
             if is_success:
                 for traceroute in data:
-                    producer.send('new_topic_temp', value=traceroute)
-
-                producer.flush()
+                    producer.send('ATLAS_TEST_5', value=traceroute)
+                    producer.flush()
             else:
                 print("Error could not load the data")
 

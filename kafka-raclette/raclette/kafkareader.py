@@ -34,8 +34,9 @@ class Reader():
         self.consumer = KafkaConsumer(bootstrap_servers=[ 'Kafka1:9092', 'Kafka2:9092'],
                                          auto_offset_reset='earliest',
                                          value_deserializer=lambda m: json.loads(m),
-                                         group_id='blah')
-        self.consumer.subscribe('new_topic_temp')
+                                         group_id='blah',
+                                         consumer_timeout_ms=10000)
+        self.consumer.subscribe('ATLAS_TEST_5')
         return self
 
     def __exit__(self, type, value, traceback):
@@ -43,13 +44,17 @@ class Reader():
 
 
     def read(self):
+        emptyCount = 0;
         #self.bar = Bar("Processing", max=len(self.params), suffix='%(percent)d%%')
+        logging.info("Entering Infinite For")
         for message in self.consumer:
             traceroute = message.value
-
             yield self.timetrack_converter.traceroute2timetrack(traceroute)
+            pass
+        self.consumer.close()
+        logging.info("should be closed")
 
-            #self.bar.next()
+
 
 
     def close(self):
