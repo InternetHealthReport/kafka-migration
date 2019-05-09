@@ -15,7 +15,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 #IMPORT KAFKA PRODUCER
 from kafka import KafkaProducer
-producer = KafkaProducer(bootstrap_servers=['Kafka0:9092' 'Kafka1:9092', 'Kafka2:9092'],
+producer = KafkaProducer(bootstrap_servers=['Kafka1:9092', 'Kafka2:9092'],
                          value_serializer=lambda v: json.dumps(v).encode('utf-8'))
 
 #end import
@@ -89,7 +89,7 @@ if (len(sys.argv) == 1):
             print("downloading")
 
             if is_success:
-                producer.send('ATLAS_TEST_5', value=data)
+                producer.send('ATLAS_TEST_7', value=data)
                 producer.flush()
             else:
                 print("Error could not load the data")
@@ -105,7 +105,7 @@ elif (len(sys.argv) == 3):
             print("downloading")
             if is_success:
                 for traceroute in data:
-                    producer.send('ATLAS_TEST_5', value=traceroute)
+                    producer.send('ATLAS_TEST_7', value=traceroute)
                     producer.flush()
             else:
                 print("Error could not load the data")

@@ -7,7 +7,7 @@ class Saver(multiprocessing.Process):
 
     def __init__(self, filename, saver_queue):
         multiprocessing.Process.__init__(self)
-       
+
         logging.warn("Init saver")
         self.filename = filename
         self.conn = apsw.Connection(filename)
@@ -23,7 +23,7 @@ class Saver(multiprocessing.Process):
         logging.info("Started saver")
         self.createdb()
         main_running = True
-        
+
         while main_running or not self.saver_queue.empty():
             elem = self.saver_queue.get()
             if isinstance(elem, str):
@@ -41,7 +41,7 @@ class Saver(multiprocessing.Process):
         self.cursor.execute("CREATE TABLE IF NOT EXISTS experiment \
                 (id integer primary key, date text, cmd text, args text)")
 
-        # Table storing aggregated differential RTTs 
+        # Table storing aggregated differential RTTs
         self.cursor.execute("CREATE TABLE IF NOT EXISTS diffrtt \
                 (ts integer, startpoint text, endpoint text, median real, \
                 minimum real, nbsamples integer, nbtracks integer, \
@@ -65,7 +65,7 @@ class Saver(multiprocessing.Process):
 
     def save(self, elem):
         t, data = elem
-
+        logging.info(t);
         if t == "experiment":
             self.cursor.execute("INSERT INTO experiment(date, cmd, args) \
                     VALUES (?, ?, ?)", (str(data[0]), data[1], data[2]))
@@ -79,23 +79,22 @@ class Saver(multiprocessing.Process):
             return
 
         elif t == "diffrtt":
-            (ts, startpoint, endpoint, median, minimum, nb_samples, nb_tracks, 
+            (ts, startpoint, endpoint, median, minimum, nb_samples, nb_tracks,
                     nb_probes, entropy, hop, nbrealrtts) = data
 
             if self.prevts != ts:
                 self.prevts = ts
                 logging.info("start recording diff. RTTs (ts={})".format(ts))
-            
+
             self.cursor.execute("INSERT INTO diffrtt \
                     (ts, startpoint, endpoint, median, minimum, nbsamples, \
                     nbtracks, nbprobes, entropy, hop, nbrealrtts, expid) \
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )", 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )",
                     (ts, startpoint, endpoint, median, minimum, nb_samples,
-                        nb_tracks, nb_probes, entropy, hop, nbrealrtts, 
+                        nb_tracks, nb_probes, entropy, hop, nbrealrtts,
                         self.expid) )
 
         elif t == "anomaly":
             self.cursor.execute("INSERT INTO anomaly \
                     (ts, startpoint, endpoint, anomaly, reliability, expid) \
                     VALUES (?, ?, ?, ?, ?, ?)", data+[self.expid])
-

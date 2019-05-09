@@ -32,11 +32,11 @@ class Reader():
     def __enter__(self):
 
         self.consumer = KafkaConsumer(bootstrap_servers=[ 'Kafka1:9092', 'Kafka2:9092'],
-                                         auto_offset_reset='earliest',
+                                         auto_offset_reset='latest',
                                          value_deserializer=lambda m: json.loads(m),
-                                         group_id='blah',
+                                         group_id='test_group_1',
                                          consumer_timeout_ms=10000)
-        self.consumer.subscribe('ATLAS_TEST_5')
+        self.consumer.subscribe('ATLAS_TEST_7')
         return self
 
     def __exit__(self, type, value, traceback):

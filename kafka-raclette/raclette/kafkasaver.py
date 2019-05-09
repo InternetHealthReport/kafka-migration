@@ -71,7 +71,6 @@ class Saver(multiprocessing.Process):
     def save(self, elem):
 
         t, data = elem
-
         if t == "experiment":
             self.cursor.execute("INSERT INTO experiment(date, cmd, args) \
                     VALUES (?, ?, ?)", (str(data[0]), data[1], data[2]))
@@ -102,7 +101,14 @@ class Saver(multiprocessing.Process):
                 'nbrealrtts' : nbrealrtts
                 }
 
-
+            self.cursor.execute("INSERT INTO diffrtt \
+                    (ts, startpoint, endpoint, median, minimum, nbsamples, \
+                    nbtracks, nbprobes, entropy, hop, nbrealrtts, expid) \
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )",
+                    (ts, startpoint, endpoint, median, minimum, nb_samples,
+                        nb_tracks, nb_probes, entropy, hop, nbrealrtts,
+                        self.expid) )
+                        
             self.producer.send('SQLTEST4', value = serialized_data)
             if self.prevts != ts:
                 self.prevts = ts
