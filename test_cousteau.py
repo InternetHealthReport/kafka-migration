@@ -6,6 +6,11 @@ import logging
 import time
 import requests
 import sys
+import configparser
+import argparse
+
+import tools
+
 from datetime import timedelta
 from requests_futures.sessions import FuturesSession
 from requests.adapters import HTTPAdapter
@@ -21,6 +26,21 @@ producer = KafkaProducer(bootstrap_servers=['Kafka1:9092', 'Kafka2:9092'],
 #end import
 logging.basicConfig()#should be removable soon
 
+parser = argparse.ArgumentParser()
+parser.add_argument("-C","--config_file", help="Get all parameters from the specified config file", type=str, default="conf/raclette.conf")
+args = parser.parse_args()
+
+# Read the config file
+config = configparser.ConfigParser()
+config.read(args.config_file)
+
+atlas_start =  tools.valid_date(config.get("io", "start"))
+atlas_stop =  tools.valid_date(config.get("io", "stop"))
+
+atlas_msm_ids =  [int(x) for x in config.get("io", "msm_ids").split(",") if x]
+atlas_probe_ids =  [int(x) for x in config.get("io", "probe_ids").split(",") if x]
+
+topic = config.get("io", "topic")
 
 def requests_retry_session(
     retries=3,
@@ -89,23 +109,28 @@ if (len(sys.argv) == 1):
             print("downloading")
 
             if is_success:
-                producer.send('ATLAS_TEST_7', value=data)
-                producer.flush()
+                for traceroute in data:
+                    producer.send('TURBO_TIME_TEST4', value=traceroute, timestamp_ms = traceroute.get('timestamp'))
+                    producer.flush()
             else:
                 print("Error could not load the data")
         CollectionTime = CollectionTime + timedelta(minutes = 10)
         time.sleep(600)
 elif (len(sys.argv) == 3):
     print("3 Arguments.  Using Start and End Time")
-    CollectionTime = datetime.datetime.strptime(sys.argv[1], "%Y-%m-%d-%H:%M")
-    StopTime = datetime.datetime.strptime(sys.argv[2],"%Y-%m-%d-%H:%M")
+    CollectionTime = atlas_start
+    StopTime = atlas_stop
+    #CollectionTime = datetime.datetime.strptime(sys.argv[1], "%Y-%m-%d-%H:%M") Input times in command line version
+    #StopTime = datetime.datetime.strptime(sys.argv[2],"%Y-%m-%d-%H:%M")
     while CollectionTime < StopTime:
-        params = { "msm_id": [1748022, 1748024, 11645084, 11645087, 2244316, 2244318, 2244318, 2435592, 2435594, 1796567, 1796569], "start": (CollectionTime - timedelta(minutes=20)), "stop": (CollectionTime - timedelta(minutes=10)), "probe_ids": [] }
+        #params = { "msm_id": [1748022, 1748024, 11645084, 11645087, 2244316, 2244318, 2244318, 2435592, 2435594, 1796567, 1796569], "start": (CollectionTime - timedelta(minutes=20)), "stop": (CollectionTime - timedelta(minutes=10)), "probe_ids": [] } old msm id version
+        params = { "msm_id": atlas_msm_ids, "start": (CollectionTime - timedelta(minutes=20)), "stop": (CollectionTime - timedelta(minutes=10)), "probe_ids": atlas_probe_ids }
         for is_success, data in cousteau_on_steroid(params):
+
             print("downloading")
             if is_success:
                 for traceroute in data:
-                    producer.send('ATLAS_TEST_7', value=traceroute)
+                    producer.send(topic, value=traceroute, timestamp_ms = traceroute.get('timestamp'))
                     producer.flush()
             else:
                 print("Error could not load the data")
